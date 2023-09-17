@@ -2,7 +2,7 @@
 title: "p8105_hw1_zj2358"
 author: "Zhezheng Jin"
 date: "2023-09-17"
-output: html_document
+output: github_document
 ---
 
 ## Problem 1
