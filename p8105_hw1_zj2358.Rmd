@@ -5,64 +5,33 @@ date: "2023-09-17"
 output: github_document
 ---
 
-## Problem 1
+## Load the tidyverse library
 
-# Load the dataset
-
-```{r}
+```{r setup, message = FALSE}
 library(moderndive)
 data("early_january_weather")
+library(tidyverse)
+library(ggplot2)
 ```
+
+## Problem 1
 
 # View the dataset structure
 
-```{r}
+```{r, message=FALSE}
 ?early_january_weather
-```
-
-# Number of rows and columns in the dataset
-
-```{r}
-nrow(early_january_weather) 
-ncol(early_january_weather) 
-```
-
-# Mean temperature
-
-```{r}
-mean(early_january_weather$temp)
 ```
 
 # Description of dataset "early_january_weather"
 
-The "early_january_weather" dataset contains hourly meteorological data for January 2013 from three weather stations (LGA, JFK, EWR) in the New York City area.This is a subset of the weather data frame from nycflights13. It includes 15 variables:
-origin: Weather station.
+The "early_january_weather" dataset contains hourly meteorological data for January 2013 from three weather stations (LGA, JFK, EWR) in the New York City area.
 
-year, month, day, hour: Time of recording.
+There are `r ncol(early_january_weather)` variables in the early_january_weather data set, including `r colnames(early_january_weather)`. The temperature range is (`r  range(pull(early_january_weather, temp), na.rm = TRUE)`)F. The mean value of relative humidity is `r round(mean(early_january_weather$humid, na.rm=TRUE),digits = 2)`.    
 
-temp, dewp: Temperature and dewpoint in F.
+The dataset comprises `r nrow(early_january_weather)` rows
+and `r ncol(early_january_weather)` columns.
 
-humid: Relative humidity.
-
-wind_dir, wind_speed, wind_gust: Wind direction (in degrees), speed and gust speed (in mph).
-
-precip: Precipitation, in inches.
-
-pressure: Sea level pressure in millibars.
-
-visib: Visibility in miles.
-
-time_hour: Date and hour of the recording as a POSIXct date.
-
-The dataset comprises 358 rows and 15 columns.
-
-The mean temperature for the dataset is 39.58 F.
-
-# Load the required libraries
-
-```{r}
-library(ggplot2)
-```
+The mean temperature for the dataset was `r round(mean(early_january_weather$temp, na.rm=TRUE),digits = 2)` F.
 
 # Create the scatterplot
 
@@ -77,73 +46,52 @@ scatterplot <- ggplot(early_january_weather, aes(x = time_hour, y = temp, color 
   theme_minimal()
 ```
 
-# Display the scatterplot
-
-```{r}
-scatterplot
-```
-
 # Describe patterns
 
 There is a non-linear trend between Temperature and Time Hour. The temperature Range is from about 24 to 58 F. Clusters of points in the plot are concentrated in the range of 35-50 F. There's a consistent relationship between temperature and humidity. As humidity increases, temperatures tend to increase.
 
 # Export to the project directory
 
-```{r}
-ggsave("scatterplot_temp_vs_time_hour.png", scatterplot, width = 10, height = 6)
+```{r save image, warning = FALSE}
+ggsave("scatterplot_temp_vs_time_hour.pdf")
 ```
 
 ## Problem 2
 
-# Load the tidyverse package
-
-```{r}
-library(tidyverse)
-```
-
-# Set a random seed for reproducibility
-
-```{r}
-set.seed(123)
-```
-
 # Create the data frame
 
-```{r}
-zj_df <- data.frame(
+```{r df}
+zj_df <- tibble(
   random_samp = rnorm(10),                
-  logical_vector = rnorm(10) > 0,           
+  logical_vector = ifelse(random_samp>0, TRUE, FALSE),           
   character_vector = sample(letters, 10, replace = TRUE),  
-  factor_vector = as.factor(sample(1:3, 10, replace = TRUE)) 
+  factor_vector = factor(rep(c("small","medium","large"), length.out = 10)) 
 )
 ```
 
 # Calculate the mean for each variable
 
-```{r}
+```{r mean value, warning = FALSE}
 mean_random <- mean(pull(zj_df, random_samp))
 mean_logical <- mean(pull(zj_df, logical_vector))
 mean_character <- mean(pull(zj_df, character_vector))
 mean_factor <- mean(pull(zj_df, factor_vector))
 ```
 
-After calculation, the random sample, and logical vector have mean values, but the character vector and factor vector do not have.
+After calculation, the random sample has a mean value of `r round(mean_random, digits = 2)` , the logical vector has a mean value of `r round(mean_logical, digits = 2)`, but the character vector and factor vector do not have mean values.
 
 # Convert logical, character, and factor variables to numeric
 
-```{r}
+```{r numeric_convert, results = FALSE, warning = FALSE}
 zj_df$logical_vector_numeric <- as.numeric(zj_df$logical_vector)
 zj_df$character_vector_numeric <- as.numeric(zj_df$character_vector)
 zj_df$factor_vector_numeric <- as.numeric(zj_df$factor_vector)
 ```
 
-# Calculate the mean value again
+When converting logical variables to numeric ones, `TRUE` logical variable takes numeric value of `1` while `FALSE` takes value of `0`. When taking the mean value of logical variables, R automatically converts logical variables to numeric ones. 
 
-```{r}
-mean_random <- mean(pull(zj_df, random_samp))
-mean_logical <- mean(pull(zj_df, logical_vector_numeric))
-mean_character <- mean(pull(zj_df, character_vector_numeric))
-mean_factor <- mean(pull(zj_df, factor_vector_numeric))
-```
+When converting character variables to numeric ones, in this case, a warning message `NAs introduced by coercion` popped. The character variables in this data frame are consisted of letters which would induce NA value when converted to numeric data type. Thus, when taking the mean value for character value in this data frame, the result shows `NA`.
 
-After the recalculation, the factor vector has a mean value, but the mean value of the character vector is still unvailable. Because as.numeric will convert the levels of the factor to their internal integer representations.This conversion to numeric values doesn't  help explain what happens when trying to take the mean because the numeric values may not hold the same meaning as the original data.
+When converting factor variables to numeric ones, R converts different factor levels in alphabetical order to match numeric variables if not specified.However, the corresponding number has no meaning. 
+
+This conversion to numeric values doesn't necessarily help explain what happens when trying to take the mean because the numeric values may not hold the same meaning as the original data.
